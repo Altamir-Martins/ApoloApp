@@ -1,0 +1,400 @@
+# 🏗️ Arquitetura do APOLO - Visual
+
+## Fluxo de Telas
+
+```
+┌─────────────┐
+│   SPLASH    │ (3s animação)
+└──────┬──────┘
+       │
+       ▼
+┌─────────────────┐
+│  ONBOARDING     │ (3 slides)
+└──────┬──────────┘
+       │
+       ▼
+    ┌──┴──┐
+    ▼     ▼
+ LOGIN  REGISTER
+    │     │
+    └──┬──┘
+       ▼
+┌─────────────────┐
+│    HOME/MAPA    │ ◄─── PRINCIPAL
+│ (Mapbox GL JS)  │
+└──┬────┬────┬────┘
+   │    │    │
+   ▼    ▼    ▼
+ MENU SEARCH FILTER
+```
+
+## Arquitetura de Código
+
+```
+┌─────────────────────────────────────────┐
+│         index.html (760 linhas)         │
+│  - 14 telas dentro de <div id="app">    │
+│  - Carrega CSS, fonts, scripts          │
+└─────────────────────────────────────────┘
+           │
+           ├──► css/design-system.css (450 linhas)
+           │    └─ Tokens, cores, spacing, componentes base
+           │
+           ├──► css/app.css (1700+ linhas)
+           │    ├─ Layouts de todas as telas
+           │    ├─ Overlays, modais, animations
+           │    └─ ✨ +500 linhas MOBILE QUERIES
+           │
+           ├──► js/navigation.js (350 linhas)
+           │    ├─ navigate(screenId)
+           │    ├─ openOverlay(overlayId)
+           │    ├─ closeOverlay()
+           │    └─ Backdrop click management
+           │
+           ├──► js/app.js (1300+ linhas)
+           │    ├─ Inicialização Mapbox GL JS
+           │    ├─ GPS/Geolocalização
+           │    ├─ Heatmap layers
+           │    ├─ 3D mode (pitch/bearing)
+           │    ├─ Formulários de denúncia
+           │    ├─ Dark mode toggle
+           │    └─ State management
+           │
+           └──► js/mobile-optimization.js (550+ linhas) ✨ NOVO
+                ├─ Detecção device (Android, iOS, Mobile)
+                ├─ Viewport & orientation handling
+                ├─ Touch interactions
+                ├─ Soft keyboard management
+                ├─ Safe areas (notches)
+                ├─ APIs nativas (geoloc, vibra, bateria)
+                └─ System theme detection
+```
+
+## Stack Tecnológico
+
+```
+┌────────────────────────────────────┐
+│        Frontend Stack              │
+├────────────────────────────────────┤
+│ HTML5 ..................... index  │
+│ CSS3 (Responsive) ........... app  │
+│ Vanilla JavaScript ......... app   │
+├────────────────────────────────────┤
+│      External Libraries            │
+├────────────────────────────────────┤
+│ Mapbox GL JS v3.1.2 .... Maps/3D   │
+│ FontAwesome 6.4.0 ....... Icons    │
+│ Inter Font ........... Typography  │
+├────────────────────────────────────┤
+│     APIs de Dispositivo            │
+├────────────────────────────────────┤
+│ Geolocation API .... GPS/posição   │
+│ Vibration API ...... Haptic (Andr) │
+│ Orientation API ... Portrait/Land  │
+│ Battery API ....... Nível bateria  │
+│ Network Info ...... Tipo conexão   │
+├────────────────────────────────────┤
+│       Zero Dependencies             │
+│ (Sem npm, yarn, webpack, webpack)  │
+└────────────────────────────────────┘
+```
+
+## Arquitetura Mobile
+
+```
+┌─────────────────────────────────────┐
+│  index.html (Viewport correto)      │
+│  - width=device-width              │
+│  - initial-scale=1.0               │
+│  - viewport-fit=cover              │
+└────────────────┬────────────────────┘
+                 │
+    ┌────────────┴────────────┐
+    ▼                         ▼
+app.css                js/mobile-opt.js
+├─ @media (max-width: 600px)    ├─ Detecção Android/iOS
+│  ├─ Font scaling          │  ├─ Viewport resizing
+│  ├─ Touch targets 44x44   │  ├─ Orientation listener
+│  ├─ Reduced padding       │  ├─ Soft keyboard mgmt
+│  ├─ FAB repositioning     │  ├─ Safe area insets
+│  └─ Safe area support     │  ├─ Touch feedback
+│                           │  └─ Haptic/Vibration
+├─ @media (max-width: 375px)
+│  ├─ Ultra-compact layout  └─ Custom Events
+│  └─ Smaller font sizes        ├─ orientationChanged
+│                               └─ systemThemeChanged
+├─ @media (height < 500px)
+│  ├─ Landscape reduction
+│  └─ FAB repositioning  Meta Tags
+│                        ├─ viewport-fit: cover
+├─ @media (hover: none)  ├─ theme-color: #1e88e5
+│  ├─ Remove hover       └─ status-bar-style
+│  └─ Use active/opacity
+```
+
+## Fluxo de Navegação
+
+```
+START
+  │
+  ▼
+┌──────────────────┐
+│   SPLASH (4s)    │
+└────────┬─────────┘
+         │
+         ▼
+   ┌─────────────┐
+   │ONBOARDING 1 │
+   └────┬────────┘
+        │
+        ▼
+   ┌─────────────┐
+   │ONBOARDING 2 │
+   └────┬────────┘
+        │
+        ▼
+   ┌─────────────┐
+   │ONBOARDING 3 │
+   └────┬────────┘
+        │
+        ▼
+   ┌─────────────┐
+   │   LOGIN     │
+   └────┬────────┘
+        │
+        ▼
+༼ ◕_◕ ༽ HOME/MAPA (PRINCIPAL)
+   ┌─────┬─────────┬─────┐
+   │     │         │     │
+   ▼     ▼         ▼     ▼
+  FAB REPORT     FAB      MENU
+  (Report)     EMERGENCY  ITEMS
+   │
+   ├──► Report Form (3 steps)
+   │     ├─ Tipo ocorrência
+   │     ├─ Nível risco
+   │     ├─ Localização + mídia
+   │     ├─ Testemunha
+   │     └─ Sucesso
+   │
+   └──► Emergency (hold 3s)
+        └─ Enviado automaticamente
+```
+
+## Componentes Principais
+
+```
+┌─────────────────────────────────────┐
+│          MAP COMPONENT              │
+├─────────────────────────────────────┤
+│ Mapbox GL JS Instance               │
+│  ├─ Tile layer (Mapbox Streets)    │
+│  ├─ User marker (azul)             │
+│  ├─ Risk zones (círculos coloridos)│
+│  ├─ Report markers (icons)         │
+│  ├─ Heatmap layer (interpolated)   │
+│  ├─ 3D controls (pitch/bearing)    │
+│  └─ Dark mode styling              │
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│       NAVIGATION COMPONENT          │
+├─────────────────────────────────────┤
+│ Screen routing                      │
+│  ├─ 14 telas + 7 overlays          │
+│  ├─ Backdrop para fechar           │
+│  ├─ Histórico (back button)        │
+│  ├─ Transições suaves              │
+│  └─ ESC key support                │
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│      FORM COMPONENT (Reports)       │
+├─────────────────────────────────────┤
+│ 3-step wizard                       │
+│  ├─ Passo 1: Tipo (grid 2 colunas) │
+│  ├─ Passo 2: Risco (4 botões radio)│
+│  ├─ Passo 3: Local + mídia         │
+│  └─ Review + Submit                │
+└─────────────────────────────────────┘
+
+┌─────────────────────────────────────┐
+│    EMERGENCY COMPONENT              │
+├─────────────────────────────────────┤
+│ Hold-to-activate button             │
+│  ├─ Circular progress (3s)          │
+│  ├─ Auto-submit ao completar       │
+│  ├─ Protocolo automático            │
+│  └─ Contatos de emergência          │
+└─────────────────────────────────────┘
+```
+
+## Data Flow
+
+```
+┌──────────────────────────────────────────┐
+│   Mock Data (Em memória, js/app.js)      │
+├──────────────────────────────────────────┤
+│ mockReports[]  - 6 denúncias exemplo    │
+│ mockNotif[]    - 4 notificações exemplo │
+│ zoneData{}     - 3 zonas de risco       │
+│ reportState{}  - Estado do formulário   │
+└──────────────────────────────────────────┘
+        │
+        │ (não persiste)
+        │
+        ▼
+   ┌─────────────────┐
+   │  Global State   │
+   │  (window obj)   │
+   └─────────────────┘
+        │
+        └─► NAV object (routing)
+        │   └─► navigate(), openOverlay()
+        │
+        └─► Mapbox map instance
+            └─► Layers, markers, 3D
+```
+
+## Responsividade: Media Queries
+
+```
+1200px+
+│ (Desktop)
+│ Sem mudanças especiais
+│
+▼
+┌───────────────────────────────────┐
+│   Tablet (768-1200px)             │
+│   Layout intermediário            │
+└───────────────────────────────────┘
+│
+▼
+┌───────────────────────────────────┐
+│ PRINCIPAL (375-768px) ⭐          │
+│ @media (max-width: 600px)        │
+│ • Font scaling completo           │
+│ • Touch targets 44x44px           │
+│ • Safe areas insets              │
+│ • FABs repositionados            │
+│ • Espaçamento reduzido           │
+└───────────────────────────────────┘
+│
+▼
+┌───────────────────────────────────┐
+│ Ultra-compacto (< 375px)          │
+│ @media (max-width: 375px)        │
+│ • Ainda menor que acima          │
+│ • Para iPhones antigos           │
+└───────────────────────────────────┘
+│
+▼
+┌───────────────────────────────────┐
+│ Paisagem (height < 500px)         │
+│ @media (height < 500px)          │
+│ • Redução de altura              │
+│ • Para landscape mode            │
+└───────────────────────────────────┘
+```
+
+## Safe Areas (Notches)
+
+```
+┌─────────────────────────────┐
+│╔═════ Top Safe Area ═════╗│  ← env(safe-area-inset-top)
+│║                         ║│
+│║  Content normal here    ║│
+│║                         ║│
+│║  Respects notch/island  ║│
+│║                         ║│
+│╚═ Bottom Safe Area ═══════╝│  ← env(safe-area-inset-bottom)
+│                             │
+└─┬───────────────────────┬─┘
+  │ Left Safe Area        │ Right Safe Area
+  └───────────────────────┘
+    (env para cada um)
+```
+
+## Performance Path
+
+```
+HTTP Request
+│
+▼
+index.html (served)
+│
+├─► CSS Parse
+│   ├─ design-system.css (450 lines)
+│   └─ app.css (1700+ lines)
+│
+├─► Font Download
+│   └─ Inter (Google Fonts CDN)
+│
+├─► JS Parse & Execute
+│   ├─ navigation.js (immediate)
+│   ├─ app.js (init Mapbox)
+│   └─ mobile-optimization.js (device detect)
+│
+├─► Mapbox GL JS Load
+│   ├─ Map initialization
+│   ├─ Tile fetching
+│   └─ Layers rendering
+│
+└─► App Ready!
+    (Split second animations start)
+```
+
+## File Size Estimate
+
+```
+index.html                ~30 KB (HTML + embedded SVG)
+css/design-system.css     ~15 KB
+css/app.css              ~45 KB
+js/navigation.js         ~12 KB
+js/app.js               ~50 KB
+js/mobile-optimization.js ~16 KB
+────────────────────────────────
+TOTAL LOCAL             ~168 KB
+(gzip: ~40KB)
+
+EXTERNAL:
+Mapbox GL JS           ~300 KB (CDN)
+FontAwesome           ~8 KB (CDN)
+Inter Font            ~10 KB (CDN)
+────────────────────────────────
+Total with CDN        ~326 KB
+(gzip: ~80KB)
+```
+
+## Fluxo de Toque (Touch Flow)
+
+```
+User Touch
+│
+▼
+┌─────────────────────────────────┐
+│  Detectado via mobile-opt.js    │
+│  ├─ touchstart             ├─ FAB = opacity 0.7
+│  ├─ touchmove              │
+│  └─ touchend      ◄──────┘ └─ FAB = opacity 1
+└─────────────────────────────────┘
+│
+▼
+┌─────────────────────────────────┐
+│  Action dispatch                │
+│  (navigate, form submit, etc)   │
+└─────────────────────────────────┘
+│
+▼ (Optional haptic)
+┌─────────────────────────────────┐
+│  navigator.vibrate(50)          │
+│  (Android only)                 │
+└─────────────────────────────────┘
+```
+
+---
+
+**Última atualização:** Janeiro 2025  
+**Versão:** v2.1 Mobile Optimized  
+**Status:** ✅ Production Ready
+
