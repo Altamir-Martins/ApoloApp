@@ -269,8 +269,13 @@ let heatmapLayer = null;
 
 // ⚠️ CONFIGURAÇÃO IMPORTANTE: Configure seu token do Mapbox
 // Obtenha gratuitamente em: https://www.mapbox.com
-// Substitua 'pk.YOUR_MAPBOX_ACCESS_TOKEN' pelo seu token real
-mapboxgl.accessToken = 'pk.YOUR_MAPBOX_ACCESS_TOKEN';
+// Token é carregado de config.js (não versionado)
+// Leia MAPBOX_SETUP.md para instruções
+const token = window.MAPBOX_TOKEN || '';
+if (!token) {
+  console.error('Erro: Token Mapbox não configurado! Leia MAPBOX_SETUP.md.');
+}
+mapboxgl.accessToken = token;
 
 function initMap() {
   if (mapInitialized) return;
