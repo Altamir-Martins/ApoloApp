@@ -777,17 +777,12 @@
 
 <!-- SCRIPTS -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
-<!-- Mapbox token configuration -->
+<!-- Mapbox token configuration - PRODUCTION TOKEN -->
 <script>
-  // Carrega token de múltiplas fontes (em orderm de preferência):
-  // 1. config.js (desenvolvimento local)
-  // 2. Variável de ambiente MAPBOX_TOKEN (Vercel/CI)
-  // 3. LocalStorage (para testes em produção)
-  if (!window.MAPBOX_TOKEN) {
-    window.MAPBOX_TOKEN = localStorage.getItem('mapbox_token') || '';
-  }
+  // Token Mapbox público - pode ser exposto
+  window.MAPBOX_TOKEN = 'pk.eyJ1IjoiYWx0YW1pcm1hcnRpbnMiLCJhIjoiY21ucWlyZmJjMDdxcDJvcHB2ZnBmamthNCJ9.81XYl4HuboCcBEefv1MIsQ';
 </script>
-<!-- Config local (desenvolvimento, não versionado) -->
+<!-- Config local (desenvolvimento, sobrescreve o token acima se existir) -->
 <script src="config.js" onerror=""></script>
 <script src="js/navigation.js"></script>
 <script src="js/app.js"></script>
