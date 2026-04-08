@@ -776,14 +776,15 @@
 <div class="toast" id="toast"><i class="toast-icon fa-solid fa-check-circle"></i><span id="toastMsg"></span></div>
 
 <!-- SCRIPTS -->
-<script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
-<!-- Mapbox token configuration - PRODUCTION TOKEN -->
+<!-- Mapbox token - MUST be loaded first -->
 <script>
-  // Token Mapbox público - pode ser exposto
   window.MAPBOX_TOKEN = 'pk.eyJ1IjoiYWx0YW1pcm1hcnRpbnMiLCJhIjoiY21ucWlyZmJjMDdxcDJvcHB2ZnBmamthNCJ9.81XYl4HuboCcBEefv1MIsQ';
 </script>
-<!-- Config local (desenvolvimento, sobrescreve o token acima se existir) -->
+<!-- Mapbox GL JS library -->
+<script src="https://api.mapbox.com/mapbox-gl-js/v3.1.2/mapbox-gl.js"></script>
+<!-- Local config (development, optional - will override above token) -->
 <script src="config.js" onerror=""></script>
+<!-- App scripts -->
 <script src="js/navigation.js"></script>
 <script src="js/app.js"></script>
 

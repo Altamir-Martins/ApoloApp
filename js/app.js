@@ -269,13 +269,18 @@ let heatmapLayer = null;
 
 // ⚠️ CONFIGURAÇÃO IMPORTANTE: Configure seu token do Mapbox
 // Obtenha gratuitamente em: https://www.mapbox.com
-// Token é carregado de config.js (não versionado)
-// Leia MAPBOX_SETUP.md para instruções
-const token = window.MAPBOX_TOKEN || '';
-if (!token) {
-  console.error('Erro: Token Mapbox não configurado! Leia MAPBOX_SETUP.md.');
+// Token é carregado daqui ou de config.js (não versionado)
+// Aguarda que window.MAPBOX_TOKEN seja definido
+if (!window.MAPBOX_TOKEN) {
+  window.MAPBOX_TOKEN = 'pk.eyJ1IjoiYWx0YW1pcm1hcnRpbnMiLCJhIjoiY21ucWlyZmJjMDdxcDJvcHB2ZnBmamthNCJ9.81XYl4HuboCcBEefv1MIsQ';
 }
-mapboxgl.accessToken = token;
+const token = window.MAPBOX_TOKEN;
+if (token && typeof mapboxgl !== 'undefined') {
+  mapboxgl.accessToken = token;
+}
+if (!token || token === '') {
+  console.error('Erro: Token Mapbox não configurado!');
+}
 
 function initMap() {
   if (mapInitialized) return;
