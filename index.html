@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
@@ -51,20 +51,20 @@
         <!-- Slide 1 -->
         <div class="onboarding-slide">
           <div class="ob-icon ob-icon--blue"><i class="fa-solid fa-shield-halved"></i></div>
-          <h2>Segurança Anônima</h2>
-          <p>Denuncie crimes e situações de risco sem revelar sua identidade. Sua proteção é nossa prioridade.</p>
+          <h2>Segurança AnÃ´nima</h2>
+          <p>Denuncie crimes e situaçÃµes de risco sem revelar sua identidade. Sua proteção é nossa prioridade.</p>
         </div>
         <!-- Slide 2 -->
         <div class="onboarding-slide">
           <div class="ob-icon ob-icon--yellow"><i class="fa-solid fa-map-location-dot"></i></div>
           <h2>Mapa em Tempo Real</h2>
-          <p>Veja as zonas de risco ao seu redor e tome decisões mais seguras no seu trajeto diário.</p>
+          <p>Veja as zonas de risco ao seu redor e tome decisÃµes mais seguras no seu trajeto diário.</p>
         </div>
         <!-- Slide 3 -->
         <div class="onboarding-slide">
           <div class="ob-icon ob-icon--red"><i class="fa-solid fa-siren-on"></i></div>
-          <h2>Emergência Imediata</h2>
-          <p>Um botão de emergência conecta você rapidamente aos serviços de socorro da sua cidade.</p>
+          <h2>EmergÃªncia Imediata</h2>
+          <p>Um botão de emergÃªncia conecta vocÃª rapidamente aos serviços de socorro da sua cidade.</p>
         </div>
       </div>
       <div class="ob-dots" id="obDots">
@@ -179,14 +179,14 @@
           <i class="fa-solid fa-cube"></i>
         </button>
         <!-- Botão Centralizar na localização do usuário -->
-        <button class="btn-icon btn-icon--light" id="btnCenterUser" onclick="centerCameraOnUser()" title="Centralizar usuário" aria-label="Centralizar câmera na sua localização">
+        <button class="btn-icon btn-icon--light" id="btnCenterUser" onclick="centerCameraOnUser()" title="Centralizar usuário" aria-label="Centralizar cÃ¢mera na sua localização">
           <i class="fa-solid fa-location-crosshairs"></i>
         </button>
-        <!-- Botão Câmera -->
-        <button class="btn-icon btn-icon--light" id="btnCamera" onclick="openCamera()" title="Câmera" aria-label="Abrir câmera">
+        <!-- Botão CÃ¢mera -->
+        <button class="btn-icon btn-icon--light" id="btnCamera" onclick="openCamera()" title="CÃ¢mera" aria-label="Abrir cÃ¢mera">
           <i class="fa-solid fa-camera"></i>
         </button>
-        <!-- Notificações -->
+        <!-- NotificaçÃµes -->
         <button class="btn-icon btn-icon--light" onclick="navigate('notifications')" style="position: relative;">
           <i class="fa-solid fa-bell"></i>
           <span class="badge">3</span>
@@ -237,7 +237,7 @@
       <button class="fab fab--report" onclick="navigate('report')" aria-label="Denunciar">
         <i class="fa-solid fa-bullhorn"></i>
       </button>
-      <button class="fab fab--emergency" id="emergencyFab" aria-label="Emergência"
+      <button class="fab fab--emergency" id="emergencyFab" aria-label="EmergÃªncia"
         onmousedown="startEmergencyHold(event)" ontouchstart="startEmergencyHold(event)"
         onmouseup="cancelEmergencyHold()" ontouchend="cancelEmergencyHold()"
         onmouseleave="cancelEmergencyHold()">
@@ -253,17 +253,17 @@
     <div class="map-bottom-strip">
       <div class="strip-item">
         <i class="fa-solid fa-triangle-exclamation" style="color:var(--yellow)"></i>
-        <span>12 ocorrências próximas</span>
+        <span>12 ocorrÃªncias próximas</span>
       </div>
       <button class="strip-action" onclick="navigate('reports-list')">Ver todas</button>
     </div>
   </div>
 
-  <!-- ===== LISTA DE OCORRÊNCIAS ===== -->
+  <!-- ===== LISTA DE OCORRÃŠNCIAS ===== -->
   <div class="screen" id="screen-reports-list">
     <div class="screen-header">
       <button class="btn-icon" onclick="navigate('home')"><i class="fa-solid fa-arrow-left"></i></button>
-      <h2 class="screen-title">Ocorrências</h2>
+      <h2 class="screen-title">OcorrÃªncias</h2>
       <button class="btn-icon" onclick="openOverlay('filter-overlay')"><i class="fa-solid fa-sliders"></i></button>
     </div>
     <div class="tabs" id="reportsTabs">
@@ -276,7 +276,7 @@
     </div>
   </div>
 
-  <!-- ===== DETALHE DA OCORRÊNCIA ===== -->
+  <!-- ===== DETALHE DA OCORRÃŠNCIA ===== -->
   <div class="screen" id="screen-report-detail">
     <div class="screen-header">
       <button class="btn-icon" onclick="navigate('reports-list')"><i class="fa-solid fa-arrow-left"></i></button>
@@ -288,7 +288,7 @@
     </div>
   </div>
 
-  <!-- ===== DENÚNCIA ===== -->
+  <!-- ===== DENÃšNCIA ===== -->
   <div class="screen" id="screen-report">
     <div class="screen-header">
       <button class="btn-icon" onclick="navigate('home')"><i class="fa-solid fa-arrow-left"></i></button>
@@ -306,7 +306,7 @@
 
     <!-- Step 1 -->
     <div class="report-step active" id="reportStep1">
-      <p class="step-instruction">Selecione o tipo de ocorrência:</p>
+      <p class="step-instruction">Selecione o tipo de ocorrÃªncia:</p>
       <div class="incident-grid">
         <button class="incident-card" onclick="selectIncident(this, 'Roubo/Furto')">
           <i class="fa-solid fa-masks-theater"></i><span>Roubo/Furto</span>
@@ -323,8 +323,8 @@
         <button class="incident-card" onclick="selectIncident(this, 'Via Perigosa')">
           <i class="fa-solid fa-road-barrier"></i><span>Via Perigosa</span>
         </button>
-        <button class="incident-card" onclick="selectIncident(this, 'Violência')">
-          <i class="fa-solid fa-hand-fist"></i><span>Violência</span>
+        <button class="incident-card" onclick="selectIncident(this, 'ViolÃªncia')">
+          <i class="fa-solid fa-hand-fist"></i><span>ViolÃªncia</span>
         </button>
         <button class="incident-card" onclick="selectIncident(this, 'Suspeito')">
           <i class="fa-solid fa-user-secret"></i><span>Suspeito</span>
@@ -383,10 +383,10 @@
       </div>
       <div class="anon-notice">
         <i class="fa-solid fa-user-secret"></i>
-        <p>Sua identidade está protegida. Esta denúncia será enviada de forma 100% anônima.</p>
+        <p>Sua identidade está protegida. Esta denúncia será enviada de forma 100% anÃ´nima.</p>
       </div>
       <div class="witness-section">
-        <p class="step-instruction">Você testemunhou diretamente o fato?</p>
+        <p class="step-instruction">VocÃª testemunhou diretamente o fato?</p>
         <div class="witness-btns">
           <button class="btn btn--outline witness-btn" id="witnessYes" onclick="setWitness(true)"><i class="fa-solid fa-check"></i> Sim, testemunhei</button>
           <button class="btn btn--ghost witness-btn" id="witnessNo" onclick="setWitness(false)"><i class="fa-solid fa-xmark"></i> Não testemunhei</button>
@@ -399,11 +399,11 @@
     </div>
   </div>
 
-  <!-- ===== EMERGÊNCIA ===== -->
+  <!-- ===== EMERGÃŠNCIA ===== -->
   <div class="screen" id="screen-emergency">
     <div class="screen-header">
       <button class="btn-icon" onclick="navigate('home')"><i class="fa-solid fa-arrow-left"></i></button>
-      <h2 class="screen-title">Emergência</h2>
+      <h2 class="screen-title">EmergÃªncia</h2>
       <div style="width:40px"></div>
     </div>
     <div class="emergency-container" id="emergencyContainer">
@@ -411,8 +411,8 @@
         <div class="emergency-icon-big">
           <i class="fa-solid fa-siren-on"></i>
         </div>
-        <h2>Acionar Emergência</h2>
-        <p>Pressione e segure o botão abaixo por 3 segundos para acionar os serviços de emergência.</p>
+        <h2>Acionar EmergÃªncia</h2>
+        <p>Pressione e segure o botão abaixo por 3 segundos para acionar os serviços de emergÃªncia.</p>
         <div class="emergency-hold-area">
           <button class="btn-emergency-hold"
             onmousedown="startEmergencyScreen(event)" ontouchstart="startEmergencyScreen(event)"
@@ -445,22 +445,22 @@
       </div>
       <div class="emergency-active" id="emergencyActive" style="display:none">
         <div class="ea-pulse"><i class="fa-solid fa-siren-on"></i></div>
-        <h2>Emergência Acionada!</h2>
-        <p>Serviços de emergência notificados. Aguarde.</p>
+        <h2>EmergÃªncia Acionada!</h2>
+        <p>Serviços de emergÃªncia notificados. Aguarde.</p>
         <div class="ea-protocol">
           <span>Protocolo</span>
           <strong id="eaProtocol">#APL-000000</strong>
         </div>
-        <button class="btn btn--ghost btn--full" onclick="cancelEmergencyActive()">Cancelar Emergência</button>
+        <button class="btn btn--ghost btn--full" onclick="cancelEmergencyActive()">Cancelar EmergÃªncia</button>
       </div>
     </div>
   </div>
 
-  <!-- ===== NOTIFICAÇÕES ===== -->
+  <!-- ===== NOTIFICAÃ‡Ã•ES ===== -->
   <div class="screen" id="screen-notifications">
     <div class="screen-header">
       <button class="btn-icon" onclick="navigate('home')"><i class="fa-solid fa-arrow-left"></i></button>
-      <h2 class="screen-title">Notificações</h2>
+      <h2 class="screen-title">NotificaçÃµes</h2>
       <button class="btn-icon" onclick="markAllRead()"><i class="fa-solid fa-check-double"></i></button>
     </div>
     <div class="list-container" id="notificationsList">
@@ -480,11 +480,11 @@
         <div class="avatar-circle"><i class="fa-solid fa-user"></i></div>
         <button class="avatar-edit"><i class="fa-solid fa-camera"></i></button>
       </div>
-      <h3 class="profile-name">Usuário Anônimo</h3>
+      <h3 class="profile-name">Usuário AnÃ´nimo</h3>
       <p class="profile-member">Membro desde Jan 2025</p>
       <div class="profile-stats">
         <div class="stat-card"><span class="stat-num">7</span><span class="stat-label">Denúncias</span></div>
-        <div class="stat-card"><span class="stat-num">3</span><span class="stat-label">Validações</span></div>
+        <div class="stat-card"><span class="stat-num">3</span><span class="stat-label">ValidaçÃµes</span></div>
         <div class="stat-card"><span class="stat-num">12</span><span class="stat-label">Alertas</span></div>
       </div>
       <div class="profile-menu">
@@ -492,7 +492,7 @@
           <i class="fa-solid fa-list"></i><span>Minhas Denúncias</span><i class="fa-solid fa-chevron-right"></i>
         </button>
         <button class="profile-menu-item" onclick="navigate('settings')">
-          <i class="fa-solid fa-gear"></i><span>Configurações</span><i class="fa-solid fa-chevron-right"></i>
+          <i class="fa-solid fa-gear"></i><span>ConfiguraçÃµes</span><i class="fa-solid fa-chevron-right"></i>
         </button>
         <button class="profile-menu-item" onclick="navigate('help')">
           <i class="fa-solid fa-circle-question"></i><span>Ajuda</span><i class="fa-solid fa-chevron-right"></i>
@@ -504,16 +504,16 @@
     </div>
   </div>
 
-  <!-- ===== CONFIGURAÇÕES ===== -->
+  <!-- ===== CONFIGURAÃ‡Ã•ES ===== -->
   <div class="screen" id="screen-settings">
     <div class="screen-header">
       <button class="btn-icon" onclick="navigate('profile')"><i class="fa-solid fa-arrow-left"></i></button>
-      <h2 class="screen-title">Configurações</h2>
+      <h2 class="screen-title">ConfiguraçÃµes</h2>
       <div style="width:40px"></div>
     </div>
     <div class="settings-container">
       <div class="settings-section">
-        <h4 class="settings-label">Notificações</h4>
+        <h4 class="settings-label">NotificaçÃµes</h4>
         <div class="settings-item">
           <span>Alertas de área</span>
           <label class="toggle"><input type="checkbox" checked /><span class="toggle-track"></span></label>
@@ -523,14 +523,14 @@
           <label class="toggle"><input type="checkbox" checked /><span class="toggle-track"></span></label>
         </div>
         <div class="settings-item">
-          <span>Atualizações de status</span>
+          <span>AtualizaçÃµes de status</span>
           <label class="toggle"><input type="checkbox" /><span class="toggle-track"></span></label>
         </div>
       </div>
       <div class="settings-section">
         <h4 class="settings-label">Privacidade</h4>
         <div class="settings-item">
-          <span>Modo Anônimo</span>
+          <span>Modo AnÃ´nimo</span>
           <label class="toggle"><input type="checkbox" checked /><span class="toggle-track"></span></label>
         </div>
         <div class="settings-item">
@@ -539,7 +539,7 @@
         </div>
       </div>
       <div class="settings-section">
-        <h4 class="settings-label">Aparência</h4>
+        <h4 class="settings-label">AparÃªncia</h4>
         <div class="settings-item">
           <span>Modo Escuro</span>
           <label class="toggle"><input type="checkbox" id="darkModeToggle" onchange="toggleDarkMode(this)" /><span class="toggle-track"></span></label>
@@ -598,7 +598,7 @@
       </div>
       <p class="success-note">Guarde este número para acompanhar o status da sua denúncia.</p>
       <button class="btn btn--primary btn--full" onclick="navigate('home')">Voltar ao início</button>
-      <button class="btn btn--ghost btn--full" onclick="navigate('reports-list')">Ver ocorrências</button>
+      <button class="btn btn--ghost btn--full" onclick="navigate('reports-list')">Ver ocorrÃªncias</button>
     </div>
   </div>
 
@@ -629,7 +629,7 @@
         </svg>
       </span><span class="logo-lo">LO</span>
     </div>
-    <!-- BOTÃO X — FUNCIONANDO CORRETAMENTE -->
+    <!-- BOTÃƒO X — FUNCIONANDO CORRETAMENTE -->
     <button class="side-menu-close" id="btnMenuClose" onclick="closeOverlay('menu-overlay')" aria-label="Fechar menu" type="button">
       <i class="fa-solid fa-xmark"></i>
     </button>
@@ -637,8 +637,8 @@
   <div class="side-menu-user">
     <div class="avatar-circle avatar-circle--sm"><i class="fa-solid fa-user-secret"></i></div>
     <div>
-      <p class="smu-name">Usuário Anônimo</p>
-      <p class="smu-status"><span class="status-dot status-dot--green"></span>Anônimo ativo</p>
+      <p class="smu-name">Usuário AnÃ´nimo</p>
+      <p class="smu-status"><span class="status-dot status-dot--green"></span>AnÃ´nimo ativo</p>
     </div>
   </div>
   <nav class="side-menu-nav">
@@ -646,23 +646,23 @@
       <i class="fa-solid fa-map-location-dot"></i><span>Mapa</span>
     </button>
     <button class="smn-item" onclick="menuNavigate('reports-list')">
-      <i class="fa-solid fa-list-ul"></i><span>Ocorrências</span>
+      <i class="fa-solid fa-list-ul"></i><span>OcorrÃªncias</span>
     </button>
     <button class="smn-item" onclick="menuNavigate('report')">
       <i class="fa-solid fa-bullhorn"></i><span>Nova Denúncia</span>
     </button>
     <button class="smn-item" onclick="menuNavigate('emergency')">
-      <i class="fa-solid fa-siren-on"></i><span>Emergência</span>
+      <i class="fa-solid fa-siren-on"></i><span>EmergÃªncia</span>
     </button>
     <button class="smn-item" onclick="menuNavigate('notifications')">
-      <i class="fa-solid fa-bell"></i><span>Notificações <span class="badge badge--sm">3</span></span>
+      <i class="fa-solid fa-bell"></i><span>NotificaçÃµes <span class="badge badge--sm">3</span></span>
     </button>
     <div class="smn-divider"></div>
     <button class="smn-item" onclick="menuNavigate('profile')">
       <i class="fa-solid fa-user"></i><span>Meu Perfil</span>
     </button>
     <button class="smn-item" onclick="menuNavigate('settings')">
-      <i class="fa-solid fa-gear"></i><span>Configurações</span>
+      <i class="fa-solid fa-gear"></i><span>ConfiguraçÃµes</span>
     </button>
     <button class="smn-item" onclick="menuNavigate('help')">
       <i class="fa-solid fa-circle-question"></i><span>Ajuda</span>
@@ -684,7 +684,7 @@
   <div class="bs-content">
     <div class="bs-search-input">
       <i class="fa-solid fa-magnifying-glass"></i>
-      <input type="text" placeholder="Endereço, bairro ou referência..." autofocus />
+      <input type="text" placeholder="Endereço, bairro ou referÃªncia..." autofocus />
     </div>
     <h4 class="bs-section-title">Pesquisas recentes</h4>
     <div class="search-recent">
@@ -703,7 +703,7 @@
     <button class="btn-icon" onclick="closeOverlay('filter-overlay')" type="button"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div class="bs-content">
-    <h4 class="bs-section-title">Tipo de ocorrência</h4>
+    <h4 class="bs-section-title">Tipo de ocorrÃªncia</h4>
     <div class="filter-chips">
       <span class="chip chip--blue active">Todos</span>
       <span class="chip">Roubo</span>
@@ -715,7 +715,7 @@
     <div class="filter-chips">
       <span class="chip chip--blue active">Hoje</span>
       <span class="chip">Esta semana</span>
-      <span class="chip">Este mês</span>
+      <span class="chip">Este mÃªs</span>
     </div>
     <button class="btn btn--primary btn--full" onclick="applyFilter()">Aplicar Filtros</button>
   </div>
@@ -771,7 +771,7 @@
 <div class="bottom-sheet" id="zone-overlay" role="dialog" aria-modal="true">
   <div class="bs-handle"></div>
   <div class="bs-header">
-    <h3 id="zoneTitle">Área de Risco</h3>
+    <h3 id="zoneTitle">Ãrea de Risco</h3>
     <button class="btn-icon" onclick="closeOverlay('zone-overlay')" type="button"><i class="fa-solid fa-xmark"></i></button>
   </div>
   <div class="bs-content" id="zoneContent">
@@ -779,7 +779,7 @@
   </div>
 </div>
 
-<!-- ===== MODAL CONFIRMAÇÃO ===== -->
+<!-- ===== MODAL CONFIRMAÃ‡ÃƒO ===== -->
 <div class="modal-overlay" id="confirm-modal" onclick="closeModal('confirm-modal')">
   <div class="modal" onclick="event.stopPropagation()">
     <h3 id="confirmTitle">Confirmar</h3>
@@ -809,3 +809,4 @@
 
 </body>
 </html>
+

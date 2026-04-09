@@ -215,6 +215,13 @@ window.addEventListener('DOMContentLoaded', () => {
     s.classList.toggle('active', i === 0);
   });
 
+  // Configura botões do onboarding
+  const btnNext = document.getElementById('btnObNext');
+  const btnSkip = document.getElementById('btnObSkip');
+
+  if (btnNext) btnNext.addEventListener('click', onboardingNext);
+  if (btnSkip) btnSkip.addEventListener('click', () => navigate('login'));
+
   // Barra de progresso do splash
   const progressFill = document.getElementById('splashProgress');
   let progress = 0;
@@ -226,19 +233,6 @@ window.addEventListener('DOMContentLoaded', () => {
       setTimeout(() => navigate('onboarding'), 300);
     }
   }, 40);
-});
-
-// ============================================================
-// ONBOARDING
-// ============================================================
-let obSlide = 0;
-
-document.addEventListener('DOMContentLoaded', () => {
-  const btnNext = document.getElementById('btnObNext');
-  const btnSkip = document.getElementById('btnObSkip');
-
-  if (btnNext) btnNext.addEventListener('click', onboardingNext);
-  if (btnSkip) btnSkip.addEventListener('click', () => navigate('login'));
 });
 
 function onboardingNext() {
@@ -412,6 +406,9 @@ function initMap() {
         intensity: 0.5,
         position: [1.15, 210, 30]
       });
+
+      // Geolocalização inicial
+      if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             const lat = pos.coords.latitude;
