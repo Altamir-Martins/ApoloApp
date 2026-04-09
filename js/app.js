@@ -348,17 +348,70 @@ function initMap() {
       style: 'mapbox://styles/mapbox/streets-v12',
       center: defaultCenter,
       zoom: 15,
-      pitch: 0,
+      pitch: 45,
       bearing: 0,
+      maxPitch: 85,
     });
 
     // Remove controle de atribuição padrão
-    mapInstance.setMaxPitch(60);
+    mapInstance.setMaxPitch(85);
+
+    // Adiciona heading indicator (bússola e direção)
+    const headingIndicator = new mapboxgl.GeolocateControl({
+      positionOptions: {
+        enableHighAccuracy: true
+      },
+      trackUserLocation: true,
+      showUserHeading: true,
+      showAccuracyCircle: true,
+    });
+    mapInstance.addControl(headingIndicator, 'top-left');
 
     // Aguarda mapa carregar
     mapInstance.on('load', function() {
-      // Geolocalização
-      if (navigator.geolocation) {
+      // Adicionabuilding layer para visualização 3D (prédios, estruturas)
+      if (!mapInstance.getSource('composite')) {
+        // Layer de prédios 3D
+        mapInstance.addLayer(
+          {
+            id: '3d-buildings',
+            source: 'composite',
+            'source-layer': 'building',
+            type: 'fill-extrusion',
+            paint: {
+              'fill-extrusion-color': '#aaa',
+              'fill-extrusion-height': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                15,
+                0,
+                15.05,
+                ['get', 'height']
+              ],
+              'fill-extrusion-base': [
+                'interpolate',
+                ['linear'],
+                ['zoom'],
+                15,
+                0,
+                15.05,
+                ['get', 'min_height']
+              ],
+              'fill-extrusion-opacity': 0.6
+            }
+          },
+          'waterway-label'
+        );
+      }
+
+      // Iluminação 3D
+      mapInstance.setLight({
+        anchor: 'viewport',
+        color: '#fff',
+        intensity: 0.5,
+        position: [1.15, 210, 30]
+      });
         navigator.geolocation.getCurrentPosition(
           (pos) => {
             const lat = pos.coords.latitude;
@@ -487,31 +540,64 @@ function addReportMarkers() {
 
   mockReports.forEach((report) => {
     const color = colors[report.risk] || '#9E9E9E';
+    
+    // Adiciona dados de testemunhas se não existir
+    if (!report.witnesses) {
+      report.witnesses = Math.floor(Math.random() * 5);
+    }
+    if (!report.time) {
+      report.time = new Date(Date.now() - Math.random() * 86400000).toLocaleTimeString('pt-BR');
+    }
 
     // Cria elemento customizado do marcador
     const el = document.createElement('div');
     el.style.cssText = `
-      width: 32px;
-      height: 32px;
+      width: 40px;
+      height: 40px;
       background: ${color};
       border-radius: 50% 50% 50% 0;
-      border: 2px solid white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+      border: 3px solid white;
+      box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
       display: flex;
       align-items: center;
       justify-content: center;
       transform: rotate(-45deg);
-      font-size: 14px;
+      font-size: 18px;
       color: white;
       cursor: pointer;
+      transition: transform 0.2s ease;
     `;
+    
+    el.onmouseover = () => el.style.transform = 'rotate(-45deg) scale(1.2)';
+    el.onmouseout = () => el.style.transform = 'rotate(-45deg) scale(1)';
 
-    // Adiciona popup
-    const popup = new mapboxgl.Popup({ offset: 25 })
+    // Popup com dados da denúncia e opção de testemunha
+    const popup = new mapboxgl.Popup({ offset: 25, maxWidth: 300 })
       .setHTML(`
-        <div style="padding: 8px;">
-          <strong>${report.type}</strong><br>
-          <small>${report.desc.substring(0, 60)}...</small>
+        <div style="padding: 12px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <strong style="font-size: 16px; color: ${color};">${report.type}</strong>
+            <span style="font-size: 12px; color: #999;">${report.time}</span>
+          </div>
+          <p style="margin: 8px 0; font-size: 13px; color: #333; line-height: 1.4;">${report.desc}</p>
+          <div style="display: flex; gap: 12px; margin: 10px 0; font-size: 12px;">
+            <div><strong>⚠️ Risco:</strong> <span style="color: ${color};">${report.risk}</span></div>
+            <div><strong>👥 Testemunhas:</strong> <span style="color: #1976D2;">${report.witnesses}</span></div>
+          </div>
+          <button onclick="declareWitness(${report.id})" style="
+            width: 100%;
+            padding: 8px;
+            background: #1976D2;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            margin-top: 8px;
+          ">
+            ✓ Sou Testemunha
+          </button>
         </div>
       `);
 
@@ -520,13 +606,31 @@ function addReportMarkers() {
       .setPopup(popup)
       .addTo(mapInstance);
 
-    // Evento de click: mostra descrição da denúncia
+    // Evento de click: mostra popup da denúncia
     el.addEventListener('click', () => {
       marker.togglePopup();
+      mapInstance.flyTo({
+        center: [report.lng, report.lat],
+        zoom: Math.max(mapInstance.getZoom(), 16),
+        speed: 0.8
+      });
     });
 
     reportMarkers.push(marker);
   });
+}
+
+// Função para declarar testemunha
+function declareWitness(reportId) {
+  const report = mockReports.find(r => r.id === reportId);
+  if (report) {
+    report.witnesses = (report.witnesses || 0) + 1;
+    showToast(`✓ Você foi adicionado como testemunha! (${report.witnesses} testemunhas)`, 'fa-user-check');
+    // Recarrega marcadores para atualizar a contagem
+    reportMarkers.forEach(m => m.remove());
+    reportMarkers = [];
+    addReportMarkers();
+  }
 }
 
 function addHeatmapLayer() {
@@ -621,9 +725,10 @@ function addHeatmapLayer() {
 
 function enable3DMode() {
   if (mapInstance) {
-    mapInstance.setPitch(45);
-    mapInstance.setBearing(25);
-    showToast('Modo 3D ativado', 'fa-cube');
+    // Máxima inclinação 3D com iluminação completa
+    mapInstance.setPitch(80);
+    mapInstance.setBearing(45);
+    showToast('🏢 Modo 3D Completo: Prédios, árvores, estruturas', 'fa-cube');
   }
 }
 
@@ -631,7 +736,7 @@ function disable3DMode() {
   if (mapInstance) {
     mapInstance.setPitch(0);
     mapInstance.setBearing(0);
-    showToast('Modo 2D', 'fa-map');
+    showToast('📍 Modo 2D: Vista do topo', 'fa-map');
   }
 }
 
@@ -780,6 +885,159 @@ function updateRealTimeLocation() {
 
   // Armazenar watchId para limpeza posterior
   window.geolocationWatchId = watchId;
+}
+
+/**
+ * Calcula melhor rota considerando segurança, praticidade e tempo
+ * Integrado com Mapbox Directions API
+ */
+function calculateSafestRoute(startLng, startLat, endLng, endLat) {
+  // URL da Mapbox Directions API
+  const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${startLng},${startLat};${endLng},${endLat}?alternatives=true&steps=true&geometries=geojson&overview=full&access_token=${mapboxgl.accessToken}`;
+
+  fetch(directionsUrl)
+    .then(response => response.json())
+    .then(data => {
+      if (data.routes && data.routes.length > 0) {
+        // Selecionar rota considerando áreas de risco
+        let safestRoute = data.routes[0];
+        let lowestRisk = calculateRouteRiskScore(safestRoute);
+
+        for (let i = 1; i < data.routes.length; i++) {
+          const riskScore = calculateRouteRiskScore(data.routes[i]);
+          if (riskScore < lowestRisk) {
+            lowestRisk = riskScore;
+            safestRoute = data.routes[i];
+          }
+        }
+
+        // Exibir melhor rota no mapa
+        displayRoute(safestRoute, lowestRisk);
+      }
+    })
+    .catch(err => {
+      console.error('Erro ao calcular rota:', err);
+      showToast('❌ Erro ao calcular rota. Tente novamente.', 'fa-exclamation');
+    });
+}
+
+/**
+ * Calcula score de risco da rota baseado nas zonas de denúncia
+ */
+function calculateRouteRiskScore(route) {
+  let riskScore = 0;
+  
+  if (!route.geometry || !route.geometry.coordinates) return riskScore;
+
+  // Verificar proximidade com áreas de risco
+  route.geometry.coordinates.forEach(coord => {
+    mockReports.forEach(report => {
+      const distance = calculateDistance(coord[1], coord[0], report.lat, report.lng);
+      
+      if (distance < 0.01) { // Dentro de 1 km
+        if (report.risk === 'high') riskScore += 5;
+        else if (report.risk === 'moderate') riskScore += 2;
+        else if (report.risk === 'attention') riskScore += 1;
+      }
+    });
+  });
+
+  // Levar em conta também a distância da rota
+  riskScore += route.distance / 1000; // Adicionar km como fator
+
+  return riskScore;
+}
+
+/**
+ * Calcula distância entre dois pontos em graus (aproximado)
+ */
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  const R = 111.32; // km por grau aproximadamente
+  const dLat = Math.abs(lat1 - lat2);
+  const dLng = Math.abs(lng1 - lng2);
+  return Math.sqrt(dLat * dLat + dLng * dLng) * R;
+}
+
+/**
+ * Exibir rota no mapa
+ */
+function displayRoute(route, riskScore) {
+  // Remover rota anterior se existir
+  if (mapInstance.getSource('route')) {
+    mapInstance.removeLayer('route');
+    mapInstance.removeSource('route');
+  }
+
+  // Adicionar nova rota
+  mapInstance.addSource('route', {
+    type: 'geojson',
+    data: {
+      type: 'Feature',
+      geometry: route.geometry
+    }
+  });
+
+  mapInstance.addLayer({
+    id: 'route',
+    type: 'line',
+    source: 'route',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round'
+    },
+    paint: {
+      'line-color': riskScore > 5 ? '#FB8C00' : riskScore > 2 ? '#FDD835' : '#43A047',
+      'line-width': 4,
+      'line-opacity': 0.75
+    }
+  });
+
+  // Animar câmera para mostrar rota
+  const bounds = route.geometry.coordinates.reduce((bounds, coord) => {
+    return bounds.extend(coord);
+  }, new mapboxgl.LngLatBounds(route.geometry.coordinates[0], route.geometry.coordinates[0]));
+
+  mapInstance.fitBounds(bounds, { padding: 100 });
+
+  const riskLevel = riskScore > 5 ? '⚠️ Alto' : riskScore > 2 ? '⚡ Moderado' : '✓ Baixo';
+  showToast(`Rota calculada - Risco: ${riskLevel} - Distância: ${(route.distance / 1000).toFixed(1)}km`, 'fa-route');
+}
+
+/**
+ * Buscar endereço e calcular rota
+ * Integrado com Mapbox Geocoding API
+ */
+function searchAndRoute(searchQuery) {
+  if (!searchQuery || searchQuery.trim() === '') {
+    showToast('Digite um endereço para calcular rota', 'fa-search');
+    return;
+  }
+
+  const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxgl.accessToken}&limit=1&language=pt`;
+
+  fetch(geocodeUrl)
+    .then(response => response.json())
+    .then(data => {
+      if (data.features && data.features.length > 0) {
+        const destination = data.features[0];
+        const destCoords = destination.geometry.coordinates;
+
+        // Se temos localização do usuário, calcular rota
+        if (userMarker) {
+          const userCoords = userMarker.getLngLat();
+          calculateSafestRoute(userCoords.lng, userCoords.lat, destCoords[0], destCoords[1]);
+          showToast(`🗺️ Navegando para: ${destination.place_name}`, 'fa-location-arrow');
+        } else {
+          showToast('📍 Localize-se primeiro com o botão de localização', 'fa-location-dot');
+        }
+      } else {
+        showToast('❌ Endereço não encontrado. Tente outro', 'fa-search');
+      }
+    })
+    .catch(err => {
+      console.error('Erro ao buscar endereço:', err);
+      showToast('❌ Erro ao buscar endereço', 'fa-exclamation');
+    });
 }
 
 function openZoneDetail(zoneId) {

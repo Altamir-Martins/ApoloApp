@@ -194,6 +194,25 @@
       </div>
     </div>
 
+    <!-- Search Bar for Route Navigation -->
+    <div class="search-bar-container">
+      <div class="search-bar">
+        <i class="fa-solid fa-search search-icon"></i>
+        <input 
+          type="text" 
+          id="searchInput" 
+          class="search-input" 
+          placeholder="Buscar endereço ou local..."
+          onkeypress="if(event.key==='Enter') searchAndRoute(this.value)"
+        />
+        <button class="btn-search-clear" onclick="document.getElementById('searchInput').value=''; document.getElementById('searchInput').focus();">
+          <i class="fa-solid fa-times"></i>
+        </button>
+      </div>
+      <!-- Quick suggestions -->
+      <div class="search-suggestions" id="searchSuggestions" style="display: none;"></div>
+    </div>
+
     <!-- Map -->
     <div id="map"></div>
 
