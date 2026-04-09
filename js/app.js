@@ -260,6 +260,7 @@ let mapInitialized = false;
 let userMarker = null;
 let reportMarkers = [];
 let heatmapLayer = null;
+let obSlide = 0;
 
 // ⚠️ CONFIGURAÇÃO IMPORTANTE: Configure seu token do Mapbox
 // Obtenha gratuitamente em: https://www.mapbox.com
@@ -339,7 +340,7 @@ function initMap() {
   try {
     mapInstance = new mapboxgl.Map({
       container: 'map',
-      style: 'mapbox://styles/mapbox/streets-v12',
+      style: 'mapbox://styles/mapbox/standard',
       center: defaultCenter,
       zoom: 15,
       pitch: 45,
@@ -363,48 +364,23 @@ function initMap() {
 
     // Aguarda mapa carregar
     mapInstance.on('load', function() {
-      // Adicionabuilding layer para visualização 3D (prédios, estruturas)
-      if (!mapInstance.getSource('composite')) {
-        // Layer de prédios 3D
-        mapInstance.addLayer(
-          {
-            id: '3d-buildings',
-            source: 'composite',
-            'source-layer': 'building',
-            type: 'fill-extrusion',
-            paint: {
-              'fill-extrusion-color': '#aaa',
-              'fill-extrusion-height': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                15,
-                0,
-                15.05,
-                ['get', 'height']
-              ],
-              'fill-extrusion-base': [
-                'interpolate',
-                ['linear'],
-                ['zoom'],
-                15,
-                0,
-                15.05,
-                ['get', 'min_height']
-              ],
-              'fill-extrusion-opacity': 0.6
-            }
-          },
-          'waterway-label'
-        );
-      }
-
       // Iluminação 3D
       mapInstance.setLight({
         anchor: 'viewport',
         color: '#fff',
         intensity: 0.5,
         position: [1.15, 210, 30]
+      });
+
+      // Adicionar céu
+      mapInstance.addLayer({
+        'id': 'sky',
+        'type': 'sky',
+        'paint': {
+          'sky-type': 'atmosphere',
+          'sky-atmosphere-sun': [0.0, 0.0],
+          'sky-atmosphere-sun-intensity': 15
+        }
       });
 
       // Geolocalização inicial
@@ -443,6 +419,7 @@ function initMap() {
 
       // ✨ NOVO: Iniciar rastreamento de localização em tempo real
       updateRealTimeLocation();
+      initializeSearchSystem();
     });
 
     mapInstance.on('error', (error) => {
@@ -462,12 +439,12 @@ function addUserMarker(lat, lng) {
 
   const el = document.createElement('div');
   el.className = 'user-location-marker';
-  el.innerHTML = '<i class="fa-solid fa-location-arrow"></i>';
+  el.innerHTML = '<div class="user-location-pin"></div>';
 
-  userMarker = new mapboxgl.Marker({ element: el })
+  userMarker = new mapboxgl.Marker({ element: el, anchor: 'bottom' })
     .setLngLat([lng, lat])
     .addTo(mapInstance)
-    .setPopup(new mapboxgl.Popup({ offset: 20 }).setHTML('<div style="padding: 10px; min-width: 150px;"><strong>Você está aqui</strong><br><small>Rastreando sua posição em tempo real.</small></div>'));
+    .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML('<div style="padding: 10px; min-width: 150px;"><strong>Você está aqui</strong><br><small>Rastreando sua posição em tempo real.</small></div>'));
 }
 
 function addRiskZones() {
@@ -782,6 +759,27 @@ function toggle3DMode() {
   }
 }
 
+function toggleTopActionPanel() {
+  const panel = document.getElementById('topActionPanel');
+  if (!panel) return;
+  panel.classList.toggle('open');
+}
+
+function toggleBottomStrip() {
+  const strip = document.getElementById('mapBottomStrip');
+  if (!strip) return;
+  strip.classList.toggle('collapsed');
+}
+
+document.addEventListener('click', (event) => {
+  const panel = document.getElementById('topActionPanel');
+  const button = document.getElementById('btnTopActionToggle');
+  if (!panel || !button) return;
+  if (!panel.contains(event.target) && !button.contains(event.target)) {
+    panel.classList.remove('open');
+  }
+});
+
 /**
  * Acessar câmera do dispositivo
  * Funcional em Android/iOS com suporte a HTML5 FileAPI
@@ -1025,6 +1023,13 @@ function displayRoute(route, riskScore) {
 
   const riskLevel = riskScore > 5 ? '⚠️ Alto' : riskScore > 2 ? '⚡ Moderado' : '✓ Baixo';
   showToast(`Rota calculada - Risco: ${riskLevel} - Distância: ${(route.distance / 1000).toFixed(1)}km`, 'fa-route');
+}
+
+function initializeSearchSystem() {
+  const searchInput = document.getElementById('searchInput');
+  if (!searchInput) return;
+
+  searchInput.addEventListener('focus', showSearchSuggestions);
 }
 
 // ============================================================
@@ -1934,12 +1939,14 @@ function confirmLogout() {
 function toggleDarkMode(checkbox) {
   document.documentElement.setAttribute('data-theme', checkbox.checked ? 'dark' : '');
 
-  // Troca estilo do mapa se inicializado
+  // Mantém o basemap Mapbox Standard em ambos os temas.
   if (mapInstance) {
-    const newStyle = checkbox.checked
-      ? 'mapbox://styles/mapbox/dark-v11'
-      : 'mapbox://styles/mapbox/light-v11';
-    mapInstance.setStyle(newStyle);
+    mapInstance.setLight({
+      anchor: 'viewport',
+      color: checkbox.checked ? '#c8d6e5' : '#ffffff',
+      intensity: checkbox.checked ? 0.35 : 0.5,
+      position: [1.15, 210, 30]
+    });
   }
 
   showToast(checkbox.checked ? 'Modo escuro ativado' : 'Modo claro ativado');

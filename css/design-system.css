@@ -44,7 +44,7 @@
   --risk-high:     #E53935;
 
   /* Typography */
-  --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font: 'Roboto', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
   /* Font sizes */
   --text-xs:   11px;
