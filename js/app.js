@@ -722,36 +722,63 @@ function addHeatmapLayer() {
 
 function enable3DMode() {
   if (mapInstance) {
-    // Máxima inclinação 3D com iluminação completa
-    mapInstance.setPitch(80);
-    mapInstance.setBearing(45);
-    showToast('🏢 Modo 3D Completo: Prédios, árvores, estruturas', 'fa-cube');
+    // Modo 3D profundo e elegante como na referência Mapbox
+    mapInstance.setPitch(75);
+    mapInstance.setBearing(35);
+    
+    // Melhorar iluminação para 3D
+    mapInstance.setLight({
+      anchor: 'viewport',
+      color: '#ffffff',
+      intensity: 0.75,
+      position: [1.15, 210, 30],
+      'mid-strength': 0.6,
+      'shadow-intensity': 0.8
+    });
+
+    // Animar com suavidade
+    showToast('🏢 Modo 3D Premium: Visualização imersiva ativada', 'fa-cube');
   }
 }
 
 function disable3DMode() {
   if (mapInstance) {
-    mapInstance.setPitch(0);
-    mapInstance.setBearing(0);
+    // Modo 2D: vista do topo
+    const transition = mapInstance.flyTo({
+      pitch: 0,
+      bearing: 0,
+      duration: 1000
+    });
+
+    // Resetar iluminação
+    mapInstance.setLight({
+      anchor: 'viewport',
+      color: '#ffffff',
+      intensity: 0.35,
+      position: [1.15, 210, 30]
+    });
+
     showToast('📍 Modo 2D: Vista do topo', 'fa-map');
   }
 }
 
 /**
- * Toggle 3D Mode - Um único botão com duas funções
+ * Toggle 3D Mode com animação elegante
  */
 function toggle3DMode() {
   if (!mapInstance) return;
 
   const currentPitch = mapInstance.getPitch();
-  const is3DOn = currentPitch > 0;
+  const is3DOn = currentPitch > 45;
 
   if (is3DOn) {
     disable3DMode();
-    document.getElementById('btn3DToggle').style.opacity = '0.6';
+    const btn3D = document.getElementById('btn3DToggle');
+    if (btn3D) btn3D.style.opacity = '0.6';
   } else {
     enable3DMode();
-    document.getElementById('btn3DToggle').style.opacity = '1';
+    const btn3D = document.getElementById('btn3DToggle');
+    if (btn3D) btn3D.style.opacity = '1';
   }
 }
 
@@ -1000,41 +1027,390 @@ function displayRoute(route, riskScore) {
   showToast(`Rota calculada - Risco: ${riskLevel} - Distância: ${(route.distance / 1000).toFixed(1)}km`, 'fa-route');
 }
 
+// ============================================================
+// SISTEMA AVANÇADO DE BUSCA E ROTEAMENTO
+// ============================================================
+
+let currentRoute = null;
+let routeTracking = false;
+let userLocation = null;
+
 /**
- * Buscar endereço e calcular rota
+ * Busca com sugestões em tempo real
  * Integrado com Mapbox Geocoding API
  */
-function searchAndRoute(searchQuery) {
-  if (!searchQuery || searchQuery.trim() === '') {
-    showToast('Digite um endereço para calcular rota', 'fa-search');
+function handleSearchInput(query) {
+  const btn = document.getElementById('btnSearchClear');
+  
+  // Mostrar/esconder botão de limpar
+  if (query.trim().length > 0) {
+    if (btn) btn.style.display = 'flex';
+    fetchSuggestions(query);
+  } else {
+    if (btn) btn.style.display = 'none';
+    hideSuggestions();
+  }
+}
+
+/**
+ * Buscar sugestões de endereços com prioridade de distância
+ */
+async function fetchSuggestions(query) {
+  if (!userMarker) {
+    showToast('Localize-se primeiro', 'fa-location-dot');
     return;
   }
 
-  const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(searchQuery)}.json?access_token=${mapboxgl.accessToken}&limit=1&language=pt`;
+  try {
+    const userCoords = userMarker.getLngLat();
+    const proximityStr = `${userCoords.lng},${userCoords.lat}`;
 
-  fetch(geocodeUrl)
-    .then(response => response.json())
-    .then(data => {
-      if (data.features && data.features.length > 0) {
-        const destination = data.features[0];
-        const destCoords = destination.geometry.coordinates;
+    const geocodeUrl = `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?` +
+      `access_token=${mapboxgl.accessToken}&limit=6&language=pt&proximity=${proximityStr}`;
 
-        // Se temos localização do usuário, calcular rota
-        if (userMarker) {
-          const userCoords = userMarker.getLngLat();
-          calculateSafestRoute(userCoords.lng, userCoords.lat, destCoords[0], destCoords[1]);
-          showToast(`🗺️ Navegando para: ${destination.place_name}`, 'fa-location-arrow');
-        } else {
-          showToast('📍 Localize-se primeiro com o botão de localização', 'fa-location-dot');
+    const response = await fetch(geocodeUrl);
+    const data = await response.json();
+
+    if (data.features && data.features.length > 0) {
+      displaySuggestions(data.features, userCoords);
+    }
+  } catch (err) {
+    console.error('Erro ao buscar sugestões:', err);
+  }
+}
+
+/**
+ * Exibir sugestões com distância
+ */
+function displaySuggestions(features, userCoords) {
+  const suggestionsDiv = document.getElementById('searchSuggestions');
+  if (!suggestionsDiv) return;
+
+  suggestionsDiv.innerHTML = '';
+  
+  features.forEach(feature => {
+    const coords = feature.geometry.coordinates;
+    const distance = calculateDistance(userCoords.lat, userCoords.lng, coords[1], coords[0]);
+    
+    const suggestionEl = document.createElement('div');
+    suggestionEl.className = 'suggestion-item';
+    suggestionEl.innerHTML = `
+      <i class="fa-solid fa-location-dot suggestion-icon"></i>
+      <div>
+        <div class="suggestion-text">${feature.place_name}</div>
+        <div class="suggestion-subtext">${distance.toFixed(2)} km de você</div>
+      </div>
+    `;
+    
+    suggestionEl.onclick = () => selectSuggestion(feature, distance);
+    suggestionsDiv.appendChild(suggestionEl);
+  });
+
+  suggestionsDiv.style.display = suggestionsDiv.children.length > 0 ? 'block' : 'none';
+}
+
+/**
+ * Calcular distância entre dois pontos (Haversine)
+ */
+function calculateDistance(lat1, lng1, lat2, lng2) {
+  const R = 6371; // Raio da Terra em km
+  const dLat = (lat2 - lat1) * Math.PI / 180;
+  const dLng = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+            Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+            Math.sin(dLng/2) * Math.sin(dLng/2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+  return R * c;
+}
+
+/**
+ * Selecionar uma sugestão e calcular rota
+ */
+function selectSuggestion(feature, distance) {
+  if (!userMarker) return;
+
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = feature.place_name;
+
+  hideSuggestions();
+
+  // Traçar rota
+  const userCoords = userMarker.getLngLat();
+  const destCoords = feature.geometry.coordinates;
+
+  calculateBestRoute(
+    userCoords.lng, 
+    userCoords.lat, 
+    destCoords[0], 
+    destCoords[1],
+    feature.place_name
+  );
+}
+
+/**
+ * Mostrar sugestões
+ */
+function showSearchSuggestions() {
+  const input = document.getElementById('searchInput');
+  if (input && input.value.trim().length > 0) {
+    const suggestionsDiv = document.getElementById('searchSuggestions');
+    if (suggestionsDiv && suggestionsDiv.children.length > 0) {
+      suggestionsDiv.style.display = 'block';
+    }
+  }
+}
+
+/**
+ * Esconder sugestões
+ */
+function hideSuggestions() {
+  const suggestionsDiv = document.getElementById('searchSuggestions');
+  if (suggestionsDiv) suggestionsDiv.style.display = 'none';
+}
+
+/**
+ * Limpar busca
+ */
+function clearSearch() {
+  const input = document.getElementById('searchInput');
+  const btn = document.getElementById('btnSearchClear');
+  if (input) input.value = '';
+  if (btn) btn.style.display = 'none';
+  hideSuggestions();
+}
+
+/**
+ * Tratar Enter na busca
+ */
+function handleSearchEnter(event) {
+  if (event.key === 'Enter') {
+    const input = event.target;
+    if (input.value.trim().length > 0) {
+      fetchSuggestions(input.value);
+    }
+  }
+}
+
+/**
+ * Calcular melhor rota com segurança
+ */
+async function calculateBestRoute(startLng, startLat, endLng, endLat, destinationName) {
+  try {
+    const directionsUrl = `https://api.mapbox.com/directions/v5/mapbox/driving/${startLng},${startLat};${endLng},${endLat}?` +
+      `alternatives=true&steps=true&geometries=geojson&overview=full&access_token=${mapboxgl.accessToken}`;
+
+    const response = await fetch(directionsUrl);
+    const data = await response.json();
+
+    if (data.routes && data.routes.length > 0) {
+      // Calcular rota mais segura
+      let bestRoute = data.routes[0];
+      let lowestRisk = calculateRouteRiskScore(bestRoute);
+
+      for (let i = 1; i < data.routes.length; i++) {
+        const riskScore = calculateRouteRiskScore(data.routes[i]);
+        if (riskScore < lowestRisk) {
+          lowestRisk = riskScore;
+          bestRoute = data.routes[i];
         }
-      } else {
-        showToast('❌ Endereço não encontrado. Tente outro', 'fa-search');
       }
-    })
-    .catch(err => {
-      console.error('Erro ao buscar endereço:', err);
-      showToast('❌ Erro ao buscar endereço', 'fa-exclamation');
-    });
+
+      displayBestRoute(bestRoute, lowestRisk, destinationName);
+    }
+  } catch (err) {
+    console.error('Erro ao calcular rota:', err);
+    showToast('Erro ao calcular rota', 'fa-exclamation');
+  }
+}
+
+/**
+ * Exibir rota no mapa com visualização elegante
+ */
+function displayBestRoute(route, riskScore, destinationName) {
+  currentRoute = route;
+
+  // Cores baseadas em risco
+  const colors = {
+    safe: '#2E7D32',           // Verde escuro
+    caution: '#F9A825',         // Amarelo
+    warning: '#FB8C00',        // Laranja
+    danger: '#E53935'          // Vermelho
+  };
+
+  const riskLevel = riskScore > 5 ? 'danger' : riskScore > 2 ? 'warning' : riskScore > 1 ? 'caution' : 'safe';
+  const lineColor = colors[riskLevel];
+
+  // Remover rota anterior
+  if (mapInstance.getSource('route')) {
+    mapInstance.removeLayer('route-line');
+    mapInstance.removeLayer('route-glow');
+    mapInstance.removeSource('route');
+  }
+
+  // Adicionar nova rota com efeito glow
+  mapInstance.addSource('route', {
+    type: 'geojson',
+    data: {
+      type: 'Feature',
+      geometry: route.geometry
+    }
+  });
+
+  // Camada de glow (base)
+  mapInstance.addLayer({
+    id: 'route-glow',
+    type: 'line',
+    source: 'route',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round'
+    },
+    paint: {
+      'line-color': lineColor,
+      'line-width': 12,
+      'line-opacity': 0.2
+    }
+  });
+
+  // Camada de linha principal
+  mapInstance.addLayer({
+    id: 'route-line',
+    type: 'line',
+    source: 'route',
+    layout: {
+      'line-join': 'round',
+      'line-cap': 'round'
+    },
+    paint: {
+      'line-color': lineColor,
+      'line-width': 5,
+      'line-opacity': 0.9
+    }
+  });
+
+  // Animar câmera para mostrar rota
+  const bounds = route.geometry.coordinates.reduce((bounds, coord) => {
+    return bounds.extend(coord);
+  }, new mapboxgl.LngLatBounds(route.geometry.coordinates[0], route.geometry.coordinates[0]));
+
+  mapInstance.fitBounds(bounds, { padding: 100, duration: 1000 });
+
+  // Exibir painel de rota
+  showRoutePanel(route, riskScore, riskLevel, destinationName);
+}
+
+/**
+ * Mostrar painel de informações da rota
+ */
+function showRoutePanel(route, riskScore, riskLevel, destinationName) {
+  const panel = document.getElementById('routeInfoPanel');
+  if (!panel) return;
+
+  const duration = Math.ceil(route.duration / 60); // segundos para minutos
+  const distance = (route.distance / 1000).toFixed(1); // metros para km
+
+  const riskLabels = {
+    safe: '✓ Segura',
+    caution: '⚠️ Moderada',
+    warning: '⚠ Cuidado',
+    danger: '❌ Perigosa'
+  };
+
+  document.getElementById('routeDestination').textContent = destinationName;
+  document.getElementById('routeDistance').textContent = `${distance} km`;
+  document.getElementById('routeTime').textContent = `${duration} min`;
+  document.getElementById('routeSafety').textContent = riskLabels[riskLevel];
+
+  panel.style.display = 'block';
+  panel.style.animation = 'slideInUp 0.4s ease-out';
+}
+
+/**
+ * Cancelar rota ativa
+ */
+function cancelRoute() {
+  if (mapInstance.getSource('route')) {
+    mapInstance.removeLayer('route-line');
+    mapInstance.removeLayer('route-glow');
+    mapInstance.removeSource('route');
+  }
+
+  currentRoute = null;
+  routeTracking = false;
+
+  const panel = document.getElementById('routeInfoPanel');
+  if (panel) {
+    panel.style.animation = 'slideOutDown 0.3s ease-in';
+    setTimeout(() => panel.style.display = 'none', 300);
+  }
+
+  const input = document.getElementById('searchInput');
+  if (input) input.value = '';
+
+  showToast('Rota cancelada', 'fa-times-circle');
+}
+
+/**
+ * Ativar modo "seguir caminho"
+ */
+function toggleRouteTracking() {
+  if (!currentRoute) return;
+
+  routeTracking = !routeTracking;
+
+  if (routeTracking) {
+    showToast('🧭 Seguindo caminho... Mantenha a câmera centrada', 'fa-compass');
+    startRouteTracking();
+  } else {
+    showToast('🗺️ Modo mapa livre ativado', 'fa-map');
+    stopRouteTracking();
+  }
+}
+
+/**
+ * Iniciar rastreamento de rota
+ */
+function startRouteTracking() {
+  if (!currentRoute || !mapInstance) return;
+
+  const firstCoord = currentRoute.geometry.coordinates[0];
+  
+  mapInstance.easeTo({
+    center: firstCoord,
+    bearing: mapInstance.getBearing(),
+    pitch: 70, // Ângulo 3D elegante
+    duration: 1000
+  });
+
+  // Atualizar câmera continuamente com localização do usuário
+  window.routeTrackingInterval = setInterval(() => {
+    if (userMarker) {
+      const userCoords = userMarker.getLngLat();
+      mapInstance.easeTo({
+        center: [userCoords.lng, userCoords.lat],
+        bearing: 0,
+        pitch: 65,
+        duration: 500
+      });
+    }
+  }, 2000);
+}
+
+/**
+ * Parar rastreamento de rota
+ */
+function stopRouteTracking() {
+  if (window.routeTrackingInterval) {
+    clearInterval(window.routeTrackingInterval);
+    window.routeTrackingInterval = null;
+  }
+}
+
+/**
+ * Toggle entre modo rota e mapa livre
+ */
+function toggleRouteTrackingMode() {
+  toggleRouteTracking();
 }
 
 function openZoneDetail(zoneId) {

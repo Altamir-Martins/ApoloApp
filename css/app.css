@@ -2097,14 +2097,15 @@ body {
 }
 
 /* ============================================================
-   SEARCH BAR STYLES
+   SEARCH BAR STYLES - ELEGANTE E RESPONSIVO
    ============================================================ */
 .search-bar-container {
   position: relative;
   padding: var(--sp-3) var(--sp-4);
-  background: var(--white);
+  background: linear-gradient(135deg, var(--white), var(--gray-50));
   border-bottom: 1px solid var(--border);
   z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.04);
 }
 
 .search-bar {
@@ -2113,22 +2114,29 @@ body {
   gap: var(--sp-2);
   height: 44px;
   padding: 0 var(--sp-3);
-  background: var(--gray-50);
+  background: var(--white);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-lg);
-  transition: all var(--t-fast);
+  transition: all var(--t-fast) cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .search-bar:focus-within {
   border-color: var(--blue);
   background: var(--white);
-  box-shadow: 0 2px 8px rgba(30, 136, 229, 0.15);
+  box-shadow: 0 4px 16px rgba(30, 136, 229, 0.25);
+  transform: translateY(-2px);
 }
 
 .search-icon {
-  color: var(--text-hint);
+  color: var(--blue);
   font-size: 16px;
   flex-shrink: 0;
+  transition: transform var(--t-fast);
+}
+
+.search-bar:focus-within .search-icon {
+  transform: rotate(15deg);
 }
 
 .search-input {
@@ -2139,10 +2147,16 @@ body {
   color: var(--text-primary);
   outline: none;
   font-family: var(--font-family);
+  letter-spacing: 0.3px;
 }
 
 .search-input::placeholder {
   color: var(--text-hint);
+  transition: color var(--t-fast);
+}
+
+.search-input:focus::placeholder {
+  color: transparent;
 }
 
 .btn-search-clear {
@@ -2157,13 +2171,15 @@ body {
   color: var(--text-hint);
   cursor: pointer;
   border-radius: var(--radius-md);
-  transition: all var(--t-fast);
+  transition: all var(--t-fast) cubic-bezier(0.34, 1.56, 0.64, 1);
   flex-shrink: 0;
+  animation: fadeIn 0.2s ease-out;
 }
 
 .btn-search-clear:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--text-primary);
+  background: rgba(30, 136, 229, 0.1);
+  color: var(--blue);
+  transform: scale(1.1) rotate(90deg);
 }
 
 .search-suggestions {
@@ -2175,17 +2191,29 @@ body {
   background: var(--white);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   max-height: 300px;
   overflow-y: auto;
   z-index: 20;
+  animation: slideDown 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .suggestion-item {
   padding: var(--sp-3) var(--sp-4);
   border-bottom: 1px solid var(--border);
   cursor: pointer;
-  transition: background var(--t-fast);
+  transition: all var(--t-fast);
   display: flex;
   align-items: center;
   gap: var(--sp-2);
@@ -2196,21 +2224,204 @@ body {
 }
 
 .suggestion-item:hover {
-  background: var(--gray-50);
+  background: linear-gradient(90deg, rgba(30, 136, 229, 0.08), transparent);
+  padding-left: calc(var(--sp-4) + 4px);
+}
+
+.suggestion-item:active {
+  background: rgba(30, 136, 229, 0.1);
 }
 
 .suggestion-icon {
   color: var(--blue);
   font-size: 16px;
+  transition: transform var(--t-fast);
+}
+
+.suggestion-item:hover .suggestion-icon {
+  transform: scale(1.2);
 }
 
 .suggestion-text {
   flex: 1;
   font-size: var(--text-sm);
   color: var(--text-primary);
+  font-weight: 500;
 }
 
 .suggestion-subtext {
   font-size: var(--text-xs);
   color: var(--text-hint);
+  white-space: nowrap;
+  transition: color var(--t-fast);
+}
+
+.suggestion-item:hover .suggestion-subtext {
+  color: var(--blue);
+}
+
+/* ============================================================
+   ROUTE INFO PANEL - ELEGANTE E FUNCIONAL
+   ============================================================ */
+.route-info-panel {
+  position: relative;
+  background: linear-gradient(135deg, var(--white), var(--gray-50));
+  border-top: 2px solid var(--blue);
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  padding: var(--sp-4);
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.12);
+  animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 15;
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideOutDown {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(100px);
+  }
+}
+
+.route-info-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+  padding-bottom: var(--sp-3);
+  border-bottom: 1px solid var(--border);
+}
+
+.route-dest-name {
+  flex: 1;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--text-primary);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.btn-icon--small {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-md);
+  background: var(--gray-50);
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  font-size: 16px;
+}
+
+.btn-icon--small:hover {
+  background: var(--blue);
+  color: white;
+  transform: rotate(15deg);
+}
+
+.route-info-content {
+  display: flex;
+  gap: var(--sp-3);
+  margin-bottom: var(--sp-4);
+}
+
+.route-stat {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
+  padding: var(--sp-3);
+  background: var(--white);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  transition: all var(--t-fast);
+}
+
+.route-stat:hover {
+  border-color: var(--blue);
+  box-shadow: 0 2px 8px rgba(30, 136, 229, 0.1);
+  transform: translateY(-2px);
+}
+
+.route-stat i {
+  font-size: 20px;
+  color: var(--blue);
+  min-width: 24px;
+  text-align: center;
+}
+
+.route-stat div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stat-label {
+  font-size: var(--text-xs);
+  color: var(--text-hint);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: var(--text-base);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ============================================================
+   ANIMAÇÕES DELUXE
+   ============================================================ */
+@keyframes pulseLocation {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.1);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Scrollbar customizado para sugestões */
+.search-suggestions::-webkit-scrollbar {
+  width: 6px;
+}
+
+.search-suggestions::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.search-suggestions::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 3px;
+  transition: background var(--t-fast);
+}
+
+.search-suggestions::-webkit-scrollbar-thumb:hover {
+  background: var(--text-hint);
 }

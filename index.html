@@ -169,10 +169,7 @@
       <button class="btn-icon btn-icon--light" id="btnMenu" onclick="openOverlay('menu-overlay')">
         <i class="fa-solid fa-bars"></i>
       </button>
-      <div class="map-search" onclick="openOverlay('search-overlay')">
-        <i class="fa-solid fa-magnifying-glass"></i>
-        <span>Pesquisar endereço...</span>
-      </div>
+      <!-- Barra de busca removida (agora integrada abaixo do mapa) -->
       <div style="display: flex; gap: 8px; align-items: center;">
         <!-- Botão Toggle 3D -->
         <button class="btn-icon btn-icon--light" id="btn3DToggle" onclick="toggle3DMode()" title="Modo 3D" aria-label="Ativar/desativar modo 3D">
@@ -194,7 +191,7 @@
       </div>
     </div>
 
-    <!-- Search Bar for Route Navigation -->
+    <!-- Search Bar Única e Funcional com Sugestões em Tempo Real -->
     <div class="search-bar-container">
       <div class="search-bar">
         <i class="fa-solid fa-search search-icon"></i>
@@ -203,13 +200,15 @@
           id="searchInput" 
           class="search-input" 
           placeholder="Buscar endereço ou local..."
-          onkeypress="if(event.key==='Enter') searchAndRoute(this.value)"
+          oninput="handleSearchInput(this.value)"
+          onkeypress="if(event.key==='Enter') handleSearchEnter(event)"
+          onfocus="showSearchSuggestions()"
         />
-        <button class="btn-search-clear" onclick="document.getElementById('searchInput').value=''; document.getElementById('searchInput').focus();">
+        <button class="btn-search-clear" id="btnSearchClear" style="display:none;" onclick="clearSearch()">
           <i class="fa-solid fa-times"></i>
         </button>
       </div>
-      <!-- Quick suggestions -->
+      <!-- Sugestões com Geografia Inteligente -->
       <div class="search-suggestions" id="searchSuggestions" style="display: none;"></div>
     </div>
 
@@ -232,6 +231,41 @@
           <i class="fa-solid fa-location-arrow" style="color: var(--blue);"></i>
           <span id="locationText">São Paulo, SP</span>
         </small>
+      </div>
+      
+      <!-- Route Info Panel - Aparece quando há rota ativa -->
+      <div class="route-info-panel" id="routeInfoPanel" style="display: none;">
+        <div class="route-info-header">
+          <button onclick="cancelRoute()" class="btn-icon btn-icon--small"><i class="fa-solid fa-arrow-left"></i></button>
+          <span id="routeDestination" class="route-dest-name"></span>
+          <button onclick="toggleRouteTracking()" class="btn-icon btn-icon--small"><i class="fa-solid fa-compass"></i></button>
+        </div>
+        <div class="route-info-content">
+          <div class="route-stat">
+            <i class="fa-solid fa-road"></i>
+            <div>
+              <span class="stat-label">Distância</span>
+              <span class="stat-value" id="routeDistance">--</span>
+            </div>
+          </div>
+          <div class="route-stat">
+            <i class="fa-solid fa-clock"></i>
+            <div>
+              <span class="stat-label">Tempo</span>
+              <span class="stat-value" id="routeTime">--</span>
+            </div>
+          </div>
+          <div class="route-stat">
+            <i class="fa-solid fa-shield-check"></i>
+            <div>
+              <span class="stat-label">Segurança</span>
+              <span class="stat-value" id="routeSafety">--</span>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn--primary" onclick="toggleRouteTrackingMode()" style="width: 100%; margin-top: var(--sp-3);">
+          <i class="fa-solid fa-directions"></i> Seguir Caminho
+        </button>
       </div>
       
       <button class="fab fab--report" onclick="navigate('report')" aria-label="Denunciar">
